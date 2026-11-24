@@ -16,10 +16,10 @@ for col in cat_cols:
     X[col] = X[col].astype("category")
     X_test[col] = pd.Categorical(X_test[col],
     categories=X[col].cat.categories)
-model = HistGradientBoostingRegressor(categorical_features="fromdtype", random_state=42)
+model = HistGradientBoostingRegressor(categorical_features="from_dtype", random_state=42)
 model.fit(X, y)
-preds = np.expm1(model.predict(X.test))
+preds = np.expm1(model.predict(X_test))
 preds = np.clip(preds, 0, None)
 sub = pd.DataFrame({"project_id":
 test["project_id"], "hours_spent": preds})
-sub.to_csv("predictions.csv", index+False)
+sub.to_csv("predictions.csv", index=False)
