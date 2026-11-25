@@ -21,8 +21,8 @@ for col in cat_cols:
     X_test[col] = pd.Categorical(X_test[col],
     categories=X[col].cat.categories)
 model = HistGradientBoostingRegressor(categorical_features="from_dtype",
-   max_iter=200,
-   learning_rate=0.05,
+   max_iter=222,
+   learning_rate=0.04,
    random_state= 42)
 model.fit(X, y)
 preds = np.expm1(model.predict(X_test))
