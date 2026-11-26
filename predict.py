@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import HistGradientBoostingRegressor
+from catboost import CatBoostRegressor
 
 train = pd.read_csv("train.csv")
 test = pd.read_csv("test.csv")
@@ -15,15 +15,17 @@ for df in [X, X_test]:
     df["active_day_ratio"] = df["active_commit_days"] / (df["project_span_days"] + 1)
     df["lines_per_active_day"] = df["lines_of_code"] / (df["active_commit_days"] + 1)
 
-cat_cols = X.select_dtypes(include=["object", "string"]).columns
-for col in cat_cols:
-    X[col] = X[col].astype("category")
-    X_test[col] = pd.Categorical(X_test[col],
-    categories=X[col].cat.categories)
-model = HistGradientBoostingRegressor(categorical_features="from_dtype",
-   max_iter=222,
-   learning_rate=0.04,
-   random_state= 42)
+cat_cols = list(X.select_dtypes(include=["object", "string"]).columns)
+X[cat_cols] = X[cat_cols].fillna("missing").astype(str)
+X_test[cat_cols] = X_test[cat_cols].fillna("missing").astype(str)
+
+model = CatBoostRegressor(
+    iteration=700,
+    learning_rate=0.04,
+    depth=6,
+    cat_features=cat_cols,
+    random_seed=42
+)
 model.fit(X, y)
 preds = np.expm1(model.predict(X_test))
 preds = np.clip(preds, 0, None)
