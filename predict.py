@@ -20,7 +20,7 @@ X[cat_cols] = X[cat_cols].fillna("missing").astype(str)
 X_test[cat_cols] = X_test[cat_cols].fillna("missing").astype(str)
 
 model = CatBoostRegressor(
-    iteration=700,
+    iterations=700,
     learning_rate=0.04,
     depth=6,
     cat_features=cat_cols,
