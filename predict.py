@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from catboost import CatBoostRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor
 
 train = pd.read_csv("train.csv")
 test = pd.read_csv("test.csv")
@@ -23,6 +24,11 @@ cat_cols = list(X.select_dtypes(include=["object", "string"]).columns)
 X[cat_cols] = X[cat_cols].fillna("missing").astype(str)
 X_test[cat_cols] = X_test[cat_cols].fillna("missing").astype(str)
 
+X_hgb, X_test_hgb = X.copy(), X_test.copy()
+for c in cat_cols:
+    X_hgb[c] = X_hgb[c].astype("category")
+    X_test_hgb[c] = pd.Categorical(X_test_hgb[c], categories=X_hgb[c].cat.categories)
+
 model = CatBoostRegressor(
     iterations=600,
     learning_rate=0.05,
@@ -31,7 +37,14 @@ model = CatBoostRegressor(
     random_seed=42
 )
 model.fit(X, y)
-preds = np.expm1(model.predict(X_test))
+hgb = HistGradientBoostingRegressor(
+    max_iter=150,
+    learning_rate=0.04,
+    categorical_features=cat_cols,
+    random_state=42
+)
+hgb.fit(X_hgb, y)
+preds = np.expm1(0.75 * model.predict(X_test) + 0.25 * hgb.predict(X_test_hgb))
 preds = np.clip(preds, 0, None)
 sub = pd.DataFrame({"project_id":
 test["project_id"], "hours_spent": preds})
