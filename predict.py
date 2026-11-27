@@ -38,7 +38,7 @@ model = CatBoostRegressor(
 )
 model.fit(X, y)
 hgb = HistGradientBoostingRegressor(
-    max_iter=150,
+    max_iter=330,
     learning_rate=0.04,
     categorical_features=cat_cols,
     random_state=42
