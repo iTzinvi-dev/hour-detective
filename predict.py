@@ -18,6 +18,10 @@ for df in [X, X_test]:
     df["total_churn_lines"] = df["lines_added_total"] + df["lines_deleted_total"]
     df["effort_score"] = (1 - df["pct_code_in_first_commit"].fillna(0)) * (1 - df["pct_generic_commit_msgs"].fillna(0))
     df["readme_density"] = df["readme_word_count"] / (df["readme_num_headings"] + 1)
+    df["real_commits"] = df["num_commits"] * (1 - df["pct_generic_commit_msgs"].fillna(0))
+    df["non_first_commit_loc"] = df["lines_of_code"] * (1 - df["pct_code_in_first_commit"].fillna(0))
+    df["deleted_per_active_day"] = df["lines_deleted_total"] / (df["active_commit_days"] + 1)
+    df["added_per_active_day"] = df["lines_added_total"] / (df["active_commit_days"] + 1)
 
 cat_cols = list(X.select_dtypes(include=["object", "string"]).columns)
 X[cat_cols] = X[cat_cols].fillna("missing").astype(str)
