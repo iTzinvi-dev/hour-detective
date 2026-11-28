@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from catboost import CatBoostRegressor
+from sklearn.model_selection import StratifiedKFold
 
 train = pd.read_csv("train.csv")
 test = pd.read_csv("test.csv")
@@ -31,18 +32,32 @@ cat_cols = list(X.select_dtypes(include=["object", "string"]).columns)
 X[cat_cols] = X[cat_cols].fillna("missing").astype(str)
 X_test[cat_cols] = X_test[cat_cols].fillna("missing").astype(str)
 
-model = CatBoostRegressor(
+skf = StratifiedKFold(
+    n_splits=5,
+    shuffle=True,
+    random_state=42
+)
+preds_log = np.zeros(len(X_test))
+
+for fold, (tr, va) in enumerate(skf.split(X,train["hours_bucket"])):
+    model = CatBoostRegressor(
     iterations=1500,
     learning_rate=0.03,
     depth=6,
     l2_leaf_reg=5,
     cat_features=cat_cols,
-    random_seed=42,
+    random_seed=42 + fold,
     verbose=0
 )
-model.fit(X, y)
+    model.fit(
+    X.iloc[tr], y.iloc[tr],
+    eval_set=(X.iloc[va], y.iloc[va]),
+    early_stopping_rounds=100,
+    verbose=False
+)
+    preds_log += model.predict(X_test) / 5
 
-preds = np.expm1(model.predict(X_test))
+preds = np.expm1(preds_log)
 preds = np.clip(preds, 0.1, 140.7)
 
 sub = pd.DataFrame({"project_id":
