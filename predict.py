@@ -32,11 +32,13 @@ X[cat_cols] = X[cat_cols].fillna("missing").astype(str)
 X_test[cat_cols] = X_test[cat_cols].fillna("missing").astype(str)
 
 model = CatBoostRegressor(
-    iterations=600,
-    learning_rate=0.05,
+    iterations=1500,
+    learning_rate=0.03,
     depth=6,
+    l2_leaf_reg=5,
     cat_features=cat_cols,
-    random_seed=42
+    random_seed=42,
+    verbose=0
 )
 model.fit(X, y)
 
