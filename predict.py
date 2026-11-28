@@ -22,6 +22,10 @@ for df in [X, X_test]:
     df["non_first_commit_loc"] = df["lines_of_code"] * (1 - df["pct_code_in_first_commit"].fillna(0))
     df["deleted_per_active_day"] = df["lines_deleted_total"] / (df["active_commit_days"] + 1)
     df["added_per_active_day"] = df["lines_added_total"] / (df["active_commit_days"] + 1)
+    df["max_commit_share"] = df["max_lines_in_one_commit"] / (df["lines_added_total"] + 1)
+    df["total_assets"] = df["num_image_files"] + df["num_audio_files"] + df["num_3d_model_files"] + df["num_font_files"]
+    df["deleted_to_loc"] = df["lines_deleted_total"] / (df["lines_of_code"] + 1)
+    df["added_to_loc"] = df["lines_added_total"] / (df["lines_of_code"] + 1)
 
 cat_cols = list(X.select_dtypes(include=["object", "string"]).columns)
 X[cat_cols] = X[cat_cols].fillna("missing").astype(str)
